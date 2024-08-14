@@ -1,3 +1,0 @@
-make unit tests
-refactor code
-make code more object oriented 

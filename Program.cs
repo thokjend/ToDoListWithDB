@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using System.Threading.Tasks;
 using Dapper;
 
 namespace To_Do_List
@@ -14,7 +13,6 @@ namespace To_Do_List
             var newTask = new Tasks();
             newTask.Task = task;
             newTask.CreatedAt = DateTime.UtcNow;
-            //newTask.CompletedAt = null;
 
             var rowsAffected = await conn.ExecuteAsync("INSERT INTO Task (Task, CreatedAt) VALUES (@Task, @CreatedAt)", newTask);
         }
@@ -39,20 +37,36 @@ namespace To_Do_List
             var rowsAffected = await conn.ExecuteAsync($"DELETE FROM Task WHERE Id like '{id}' ");
         }
 
+        static async void CompleteTask(int id)
+        {
+            var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
+            var conn = new SqlConnection(connection);
+
+            var newTask = new Tasks();
+            newTask.Id = id;
+
+            var rowsAffected = await conn.ExecuteAsync($"UPDATE Task SET CompletedAT = '{DateTime.Now}' WHERE Id like '{id}' ");
+            
+        }
+
 
         static void Main(string[] args)
         {
-            string filePath = "C:\\Users\\thokj\\OneDrive\\Desktop\\ToDoList\\test.txt";
-            var toDoList = new ToDoList(filePath);
-
-            if (!File.Exists(filePath))
-            {
-                File.Create(filePath).Close();
-            }
-
             while (true)
             {
-                Console.WriteLine("\nEnter 'add' to add a task, 'remove' to remove a task, 'view' to view all tasks, or 'exit' to quit.");
+                var infoText = @"
+-----------------------------------------------------
+|  To-Do List Application                           |
+-----------------------------------------------------
+|  Commands:                                        |
+|  'add'      - Add a new task                      |
+|  'remove'   - Remove a task by its ID             |
+|  'view'     - View all tasks                      |
+|  'complete' - Mark a task as completed            |
+|  'exit'     - Quit the application                |
+-----------------------------------------------------
+";
+                Console.WriteLine(infoText);
                 Console.Write("Your choice: ");
                 string command = Console.ReadLine().ToLower();
 
@@ -72,30 +86,27 @@ namespace To_Do_List
                     Console.Write("Enter task: ");
                     string input = Console.ReadLine();
                     CreateTask(input);
-                    //toDoList.AddItem(input);
                 }
                 else if (command == "remove")
                 {
-                    ShowTasks();
-                    //toDoList.Show();
-                    Console.Write("Enter the id of the task you want to remove: ");
+                    ShowTasks().Wait();
+                    Console.Write("\nEnter the id of the task you want to remove: ");
                     var input = int.Parse(Console.ReadLine());
                     DeleteTask(input);
-
-                    //toDoList.RemoveItem(input);
                 }
 
                 else if (command == "view")
                 {
-                    ShowTasks();
-                    //var tasks = await ViewTask();
-                    //Console.WriteLine("{0,-5} {1,-15} {2,-25} {3,-20}", "id", "task", "CreatedAt", "CompletedAt");
-                    //foreach (var task in tasks)
-                    //{
-                    //    Console.WriteLine("{0,-5} {1,-15} {2,-25} {3,-20}", task.Id, task.Task, task.CreatedAt, task.CompletedAt);
-                    //}
-                    //ViewTask();
-                    //toDoList.Show();
+                    ShowTasks().Wait();
+                    Console.Write("\npress enter to continue");
+                    Console.ReadLine();
+                }
+                else if (command == "complete")
+                {
+                    ShowTasks().Wait();
+                    Console.Write("\nEnter the id of the task you want to mark as completed: ");
+                    var input = int.Parse(Console.ReadLine());
+                    CompleteTask(input);
                 }
             }
         }

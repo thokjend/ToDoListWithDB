@@ -12,7 +12,7 @@ namespace To_Do_List
 
             var newTask = new Tasks();
             newTask.Task = task;
-            newTask.CreatedAt = DateTime.UtcNow;
+            newTask.CreatedAt = DateTime.Now;
 
             var rowsAffected = await conn.ExecuteAsync("INSERT INTO Task (Task, CreatedAt) VALUES (@Task, @CreatedAt)", newTask);
         }
@@ -42,11 +42,18 @@ namespace To_Do_List
             var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
             var conn = new SqlConnection(connection);
 
+            var task = await conn.QueryFirstOrDefaultAsync<Tasks>($"SELECT * FROM Task WHERE Id like '{id}'");
+            if (task?.CompletedAt != null)
+            {
+                //Console.WriteLine($"Task with Id {id} has already been completed on {task.CompletedAt}.");
+                return;
+            }
+
             var newTask = new Tasks();
             newTask.Id = id;
 
             var rowsAffected = await conn.ExecuteAsync($"UPDATE Task SET CompletedAT = '{DateTime.Now}' WHERE Id like '{id}' ");
-            
+
         }
 
 
@@ -70,29 +77,27 @@ namespace To_Do_List
                 Console.Write("Your choice: ");
                 string command = Console.ReadLine().ToLower();
 
-                //if (command.StartsWith("db:"))
-                //{
-                //    string[] parts = command.Split(":");
-                //    var cmd = parts[1];
-                //    GetItems(cmd);
-                //}
-
                 if (command == "exit")
                 {
                     break;
                 }
+
                 else if (command == "add")
                 {
                     Console.Write("Enter task: ");
                     string input = Console.ReadLine();
                     CreateTask(input);
                 }
+
                 else if (command == "remove")
                 {
                     ShowTasks().Wait();
                     Console.Write("\nEnter the id of the task you want to remove: ");
-                    var input = int.Parse(Console.ReadLine());
-                    DeleteTask(input);
+                    var input = Console.ReadLine();
+                    if (int.TryParse(input, out int id))
+                    {
+                        DeleteTask(id);
+                    }
                 }
 
                 else if (command == "view")
@@ -101,12 +106,16 @@ namespace To_Do_List
                     Console.Write("\npress enter to continue");
                     Console.ReadLine();
                 }
+
                 else if (command == "complete")
                 {
                     ShowTasks().Wait();
                     Console.Write("\nEnter the id of the task you want to mark as completed: ");
-                    var input = int.Parse(Console.ReadLine());
-                    CompleteTask(input);
+                    var input = Console.ReadLine();
+                    if (int.TryParse(input, out int id))
+                    {
+                        CompleteTask(id);
+                    }
                 }
             }
         }

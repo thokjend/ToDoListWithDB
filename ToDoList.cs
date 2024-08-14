@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace To_Do_List
+﻿namespace To_Do_List
 {
     internal class ToDoList
     {

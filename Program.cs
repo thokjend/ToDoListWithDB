@@ -5,17 +5,17 @@ namespace To_Do_List
 {
     internal class Program
     {
-        static async void CreateTask(string task)
-        {
-            var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
-            var conn = new SqlConnection(connection);
+        //static async void CreateTask(string task)
+        //{
+        //    var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
+        //    var conn = new SqlConnection(connection);
 
-            var newTask = new Tasks();
-            newTask.Task = task;
-            newTask.CreatedAt = DateTime.Now;
+        //    var newTask = new Tasks();
+        //    newTask.Task = task;
+        //    newTask.CreatedAt = DateTime.Now;
 
-            var rowsAffected = await conn.ExecuteAsync("INSERT INTO Task (Task, CreatedAt) VALUES (@Task, @CreatedAt)", newTask);
-        }
+        //    var rowsAffected = await conn.ExecuteAsync("INSERT INTO Task (Task, CreatedAt) VALUES (@Task, @CreatedAt)", newTask);
+        //}
 
         static async Task<IEnumerable<Tasks>> ViewTask()
         {
@@ -59,6 +59,9 @@ namespace To_Do_List
 
         static void Main(string[] args)
         {
+
+            var db = new Database(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True");
+
             while (true)
             {
                 var infoText = @"
@@ -86,7 +89,8 @@ namespace To_Do_List
                 {
                     Console.Write("Enter task: ");
                     string input = Console.ReadLine();
-                    CreateTask(input);
+                    db.CreateTask(input);
+                    //CreateTask(input);
                 }
 
                 else if (command == "remove")

@@ -5,58 +5,6 @@ namespace To_Do_List
 {
     internal class Program
     {
-        //static async void CreateTask(string task)
-        //{
-        //    var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
-        //    var conn = new SqlConnection(connection);
-
-        //    var newTask = new Tasks();
-        //    newTask.Task = task;
-        //    newTask.CreatedAt = DateTime.Now;
-
-        //    var rowsAffected = await conn.ExecuteAsync("INSERT INTO Task (Task, CreatedAt) VALUES (@Task, @CreatedAt)", newTask);
-        //}
-
-        static async Task<IEnumerable<Tasks>> ViewTask()
-        {
-            var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
-            var conn = new SqlConnection(connection);
-
-            var tasks = await conn.QueryAsync<Tasks>("SELECT * FROM Task");
-            return tasks;
-        }
-
-        static async void DeleteTask(int id)
-        {
-            var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
-            var conn = new SqlConnection(connection);
-
-            var newTask = new Tasks();
-            newTask.Id = id;
-
-            var rowsAffected = await conn.ExecuteAsync($"DELETE FROM Task WHERE Id like '{id}' ");
-        }
-
-        static async void CompleteTask(int id)
-        {
-            var connection = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=ToDoList;Integrated Security=True";
-            var conn = new SqlConnection(connection);
-
-            var task = await conn.QueryFirstOrDefaultAsync<Tasks>($"SELECT * FROM Task WHERE Id like '{id}'");
-            if (task?.CompletedAt != null)
-            {
-                //Console.WriteLine($"Task with Id {id} has already been completed on {task.CompletedAt}.");
-                return;
-            }
-
-            var newTask = new Tasks();
-            newTask.Id = id;
-
-            var rowsAffected = await conn.ExecuteAsync($"UPDATE Task SET CompletedAT = '{DateTime.Now}' WHERE Id like '{id}' ");
-
-        }
-
-
         static void Main(string[] args)
         {
 
@@ -64,19 +12,18 @@ namespace To_Do_List
 
             while (true)
             {
-                var infoText = @"
------------------------------------------------------
-|  To-Do List Application                           |
------------------------------------------------------
-|  Commands:                                        |
-|  'add'      - Add a new task                      |
-|  'remove'   - Remove a task by its ID             |
-|  'view'     - View all tasks                      |
-|  'complete' - Mark a task as completed            |
-|  'exit'     - Quit the application                |
------------------------------------------------------
-";
-                Console.WriteLine(infoText);
+                Console.WriteLine(
+                    "\n-----------------------------------------------------\n" +
+                    "|  To-Do List Application                           |\n" +
+                    "-----------------------------------------------------\n" +
+                    "|  Commands:                                        |\n" +
+                    "|  'add'      - Add a new task                      |\n" +
+                    "|  'remove'   - Remove a task by its ID             |\n" +
+                    "|  'view'     - View all tasks                      |\n" +
+                    "|  'complete' - Mark a task as completed            |\n" +
+                    "|  'exit'     - Quit the application                |\n" +
+                    "-----------------------------------------------------"
+                );
                 Console.Write("Your choice: ");
                 string command = Console.ReadLine().ToLower();
 
@@ -90,49 +37,55 @@ namespace To_Do_List
                     Console.Write("Enter task: ");
                     string input = Console.ReadLine();
                     db.CreateTask(input);
-                    //CreateTask(input);
                 }
 
                 else if (command == "remove")
                 {
-                    ShowTasks().Wait();
+                    db.ShowTasks(1).Wait();
                     Console.Write("\nEnter the id of the task you want to remove: ");
                     var input = Console.ReadLine();
                     if (int.TryParse(input, out int id))
                     {
-                        DeleteTask(id);
+                        db.DeleteTask(id);
                     }
                 }
 
                 else if (command == "view")
                 {
-                    ShowTasks().Wait();
-                    Console.Write("\npress enter to continue");
-                    Console.ReadLine();
+                    while (true)
+                    {
+                        Console.Write(
+                            "\n---------------------------------------------\n" +
+                            "|  View Tasks:                              |\n" +
+                            "|  1 - View all tasks                       |\n" +
+                            "|  2 - View completed tasks                 |\n" +
+                            "|  3 - View non-completed tasks             |\n" +
+                            "---------------------------------------------\n" +
+                            "Enter your choice: "
+                        );
+                        var input = Console.ReadLine();
+                        if (int.TryParse(input, out int number))
+                        {
+                            db.ShowTasks(number).Wait();
+                            break;
+                        }
+                        
+                        Console.WriteLine("Please enter a valid choice");
+                        
+                    }
                 }
 
                 else if (command == "complete")
                 {
-                    ShowTasks().Wait();
+                    db.ShowTasks(3).Wait();
                     Console.Write("\nEnter the id of the task you want to mark as completed: ");
                     var input = Console.ReadLine();
                     if (int.TryParse(input, out int id))
                     {
-                        CompleteTask(id);
+                        db.CompleteTask(id);
                     }
                 }
             }
         }
-
-        public static async Task ShowTasks()
-        {
-            var tasks = await ViewTask();
-            Console.WriteLine("\n{0,-5} {1,-15} {2,-25} {3,-20}", "Id", "Task", "CreatedAt", "CompletedAt");
-            foreach (var task in tasks)
-            {
-                Console.WriteLine("{0,-5} {1,-15} {2,-25} {3,-20}", task.Id, task.Task, task.CreatedAt, task.CompletedAt);
-            }
-        }
-
     }
 }

@@ -33,7 +33,7 @@ namespace To_Do_List
 
         public async void CompleteTask(int id)
         {
-            var task = await _conn.QueryFirstOrDefaultAsync<Tasks>($"SELECT * FROM Task WHERE Id like '{id}'");
+            //var task = await _conn.QueryFirstOrDefaultAsync<Tasks>($"SELECT * FROM Task WHERE Id like '{id}'");
             //if (task?.CompletedAt != null)
             //{
             //    //Console.WriteLine($"Task with Id {id} has already been completed on {task.CompletedAt}.");
